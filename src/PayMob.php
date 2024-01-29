@@ -3,8 +3,7 @@
 /**
  * IoC PayMob
  *
- * @author Mostafa El Bakly
- * @author Mohamed Abdul-Fattah
+ * @author Ali Taha
  * @license MIT
  */
 
