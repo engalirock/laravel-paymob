@@ -8,7 +8,7 @@
  * @license MIT
  */
 
-namespace BaklySystems\PayMob;
+namespace aliRocK\PayMob;
 
 class PayMob
 {

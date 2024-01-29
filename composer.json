@@ -1,6 +1,6 @@
 {
     "name": "engalirock/laravel-paymob",
-    "description": "Laravel PayMob online payment gateway package",
+    "description": "Laravel v10 PayMob online payment gateway package",
     "license": "MIT",
     "keywords": [
         "paymob",
@@ -8,18 +8,13 @@
         "online",
         "payment",
         "php",
-        "laravel",
-        "egypt"
+        "laravel"
     ],
     "homepage": "https://github.com/engalirock/laravel-paymob",
     "authors": [
         {
-            "name": "Mohamed Abdul-Fattah",
-            "email": "csmohamed8@gmail.com"
-        },
-        {
-            "name": "Mostafa El Bakly",
-            "email": "elbakly@gmail.com"
+            "name": "Ali Taha",
+            "email": "eng.alirock@gmail.com"
         }
     ],
     "require": {
@@ -28,16 +23,16 @@
     },
     "autoload": {
         "psr-4": {
-            "BaklySystems\\PayMob\\": "src/"
+            "aliRocK\\PayMob\\": "src/"
         }
     },
     "extra": {
         "laravel": {
             "providers": [
-                "BaklySystems\\PayMob\\PayMobServiceProvider"
+                "aliRocK\\PayMob\\PayMobServiceProvider"
             ],
             "aliases": {
-                "PayMob": "BaklySystems\\PayMob\\Facades\\PayMob"
+                "PayMob": "aliRocK\\PayMob\\Facades\\PayMob"
             }
         }
     }

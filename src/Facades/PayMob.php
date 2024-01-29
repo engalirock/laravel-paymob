@@ -1,6 +1,6 @@
 <?php
 
-namespace BaklySystems\PayMob\Facades;
+namespace aliRocK\PayMob\Facades;
 
 use Illuminate\Support\Facades\Facade;
 

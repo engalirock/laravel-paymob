@@ -24,7 +24,7 @@ A Laravel online payment gateway.
 Require via composer
 
 ```bash
-$ composer require baklysystems/laravel-paymob
+$ composer require engalirock/laravel-paymob
 ```
 
 In `config/app.php` file
@@ -32,13 +32,13 @@ In `config/app.php` file
 ```php
 'providers' => [
     ...
-    BaklySystems\PayMob\PayMobServiceProvider::class,
+    aliRocK\PayMob\PayMobServiceProvider::class,
     ...
 ];
 
 'aliases' => [
     ...
-    'PayMob' => BaklySystems\PayMob\Facades\PayMob::class,
+    'PayMob' => aliRocK\PayMob\Facades\PayMob::class,
     ...
 ];
 ```
