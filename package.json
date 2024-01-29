@@ -1,0 +1,28 @@
+{
+  "name": "@engalirock/laravel-paymob",
+  "version": "1.0.0",
+  "description": "paymob laravel 10",
+  "main": "index.js",
+  "scripts": {
+    "test": "exit 0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/engalirock/laravel-paymob.git"
+  },
+  "keywords": [
+    "paymob",
+    "gateway",
+    "online",
+    "payment",
+    "php",
+    "laravel",
+    "egypt"
+],
+  "author": "Mohamed Abdul-Fattah",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/engalirock/laravel-paymob/issues"
+  },
+  "homepage": "https://github.com/engalirock/laravel-paymob#readme"
+}
