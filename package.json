@@ -24,5 +24,8 @@
   "bugs": {
     "url": "https://github.com/engalirock/laravel-paymob/issues"
   },
-  "homepage": "https://github.com/engalirock/laravel-paymob#readme"
+  "homepage": "https://github.com/engalirock/laravel-paymob#readme",
+  "publishConfig": {
+    "@engalirock:registry": "https://npm.pkg.github.com"
+  }
 }
