@@ -9,6 +9,7 @@
 
 namespace aliRocK\PayMob;
 
+
 class PayMob
 {
     public function __construct()
@@ -82,8 +83,7 @@ class PayMob
     {
         // Request body
         $json = [
-            'username' => config('paymob.username'),
-            'password' => config('paymob.password')
+            'api_key' => config('paymob.api_key'),
         ];
 
         // Send curl
@@ -117,7 +117,7 @@ class PayMob
 
         // Send curl
         $order = $this->cURL(
-            'https://accept.paymobsolutions.com/api/ecommerce/orders?token='.$token,
+            'https://accept.paymobsolutions.com/api/ecommerce/orders?token=' . $token,
             $json
         );
 
@@ -139,16 +139,17 @@ class PayMob
      * @return array
      */
     public function getPaymentKeyPaymob(
-          $token,
-          $amount_cents,
-          $order_id,
-          $email   = 'null',
-          $fname   = 'null',
-          $lname   = 'null',
-          $phone   = 'null',
-          $city    = 'null',
-          $country = 'null'
-      ) {
+        $integration_id,
+        $token,
+        $amount_cents,
+        $order_id,
+        $email   = 'NA',
+        $fname   = 'NA',
+        $lname   = 'NA',
+        $phone   = 'NA',
+        $city    = 'NA',
+        $country = 'NA'
+    ) {
         // Request body
         $json = [
             'amount_cents' => $amount_cents,
@@ -161,18 +162,21 @@ class PayMob
                 "phone_number" => $phone,
                 "city"         => $city,
                 "country"      => $country,
-                'street'       => 'null',
-                'building'     => 'null',
-                'floor'        => 'null',
-                'apartment'    => 'null'
+                'street'       => 'NA',
+                'building'     => 'NA',
+                'floor'        => 'NA',
+                'apartment'    => 'NA',
+                'shipping_method' => 'PKG',
+                'postal_code'    => 'NA',
+                'state'    => 'NA',
             ],
             'currency'            => 'EGP',
-            'card_integration_id' => config('paymob.integration_id')
+            'card_integration_id' => $integration_id
         ];
 
         // Send curl
         $payment_key = $this->cURL(
-            'https://accept.paymobsolutions.com/api/acceptance/payment_keys?token='.$token,
+            'https://accept.paymobsolutions.com/api/acceptance/payment_keys?token=' . $token,
             $json
         );
 
@@ -210,27 +214,27 @@ class PayMob
     ) {
         // JSON body.
         $json = [
-          'source' => [
-            'identifier'        => $card_number,
-            'sourceholder_name' => $card_holdername,
-            'subtype'           => 'CARD',
-            'expiry_month'      => $card_expiry_mm,
-            'expiry_year'       => $card_expiry_yy,
-            'cvn'               => $card_cvn
-           ],
-          'billing' => [
-            'first_name'   => $firstname,
-            'last_name'    => $lastname,
-            'email'        => $email,
-            'phone_number' => $phone,
-           ],
-          'payment_token' => $token
+            'source' => [
+                'identifier'        => $card_number,
+                'sourceholder_name' => $card_holdername,
+                'subtype'           => 'CARD',
+                'expiry_month'      => $card_expiry_mm,
+                'expiry_year'       => $card_expiry_yy,
+                'cvn'               => $card_cvn
+            ],
+            'billing' => [
+                'first_name'   => $firstname,
+                'last_name'    => $lastname,
+                'email'        => $email,
+                'phone_number' => $phone,
+            ],
+            'payment_token' => $token
         ];
 
         // Send curl
         $payment = $this->cURL(
-          'https://accept.paymobsolutions.com/api/acceptance/payments/pay',
-          $json
+            'https://accept.paymobsolutions.com/api/acceptance/payments/pay',
+            $json
         );
 
         return $payment;
@@ -254,7 +258,7 @@ class PayMob
 
         // Send curl.
         $res = $this->cURL(
-            'https://accept.paymobsolutions.com/api/acceptance/capture?token='.$token,
+            'https://accept.paymobsolutions.com/api/acceptance/capture?token=' . $token,
             $json
         );
 
@@ -349,17 +353,17 @@ class PayMob
                     'is_staff' => false,
                     'is_superuser' => false,
                     'last_login' => null,
-                    'groups' => [ ],
-                    'user_permissions' => [ ]
+                    'groups' => [],
+                    'user_permissions' => []
                 ],
                 'created_at' => "2017-07-20T14:50:26.417338",
                 'active' => true,
                 'profile_type' => "Merchant",
-                'phones' => [ ],
+                'phones' => [],
                 'company_emails' => [
                     "elbakly@gmail.com"
                 ],
-                'company_name' => "aliRocK",
+                'company_name' => "BaklySystems",
                 'state' => "",
                 'country' => "",
                 'city' => "",
@@ -386,7 +390,7 @@ class PayMob
                 "company_emails" => [
                     "elbakly@gmail.com"
                 ],
-                "company_name" => "aliRocK",
+                "company_name" => "BaklySystems",
                 "state" => "",
                 "country" => "",
                 "city" => "",
@@ -416,7 +420,7 @@ class PayMob
         // Processed callback response.
         $processed = [
             'obj' =>
-              array (
+            array(
                 'id' => 36303,
                 'pending' => false,
                 'amount_cents' => 33300,
@@ -431,124 +435,121 @@ class PayMob
                 'profile_id' => 180,
                 'has_parent_transaction' => false,
                 'order' =>
-                array (
-                  'id' => 68010,
-                  'created_at' => '2017-10-09T13:13:50.234703',
-                  'delivery_needed' => false,
-                  'merchant' =>
-                  array (
-                    'id' => 180,
-                    'created_at' => '2017-07-20T14:50:26.417338',
-                    'phones' =>
-                    array (
+                array(
+                    'id' => 68010,
+                    'created_at' => '2017-10-09T13:13:50.234703',
+                    'delivery_needed' => false,
+                    'merchant' =>
+                    array(
+                        'id' => 180,
+                        'created_at' => '2017-07-20T14:50:26.417338',
+                        'phones' =>
+                        array(),
+                        'company_emails' =>
+                        array(
+                            0 => 'elbakly@gmail.com',
+                        ),
+                        'company_name' => 'BaklySystems',
+                        'state' => NULL,
+                        'country' => NULL,
+                        'city' => NULL,
+                        'postal_code' => NULL,
+                        'street' => NULL,
                     ),
-                    'company_emails' =>
-                    array (
-                      0 => 'elbakly@gmail.com',
+                    'collector' => NULL,
+                    'amount_cents' => 33300,
+                    'shipping_data' =>
+                    array(
+                        'id' => 46463,
+                        'first_name' => 'Mohamed',
+                        'last_name' => 'Abdul-Fattah',
+                        'street' => 'null',
+                        'building' => 'null',
+                        'floor' => 'null',
+                        'apartment' => 'null',
+                        'city' => 'El Gouna',
+                        'state' => 'NA',
+                        'country' => 'EG',
+                        'email' => 'csmohamed8@gmail.com',
+                        'phone_number' => '0123456789',
+                        'postal_code' => 'NA',
+                        'extra_description' => NULL,
+                        'shipping_method' => 'UNK',
+                        'order_id' => 68010,
+                        'order' => 68010,
                     ),
-                    'company_name' => 'aliRocK',
-                    'state' => NULL,
-                    'country' => NULL,
-                    'city' => NULL,
-                    'postal_code' => NULL,
-                    'street' => NULL,
-                  ),
-                  'collector' => NULL,
-                  'amount_cents' => 33300,
-                  'shipping_data' =>
-                  array (
-                    'id' => 46463,
-                    'first_name' => 'Mohamed',
-                    'last_name' => 'Abdul-Fattah',
-                    'street' => 'null',
-                    'building' => 'null',
-                    'floor' => 'null',
-                    'apartment' => 'null',
-                    'city' => 'El Gouna',
-                    'state' => 'NA',
-                    'country' => 'EG',
-                    'email' => 'csmohamed8@gmail.com',
-                    'phone_number' => '0123456789',
-                    'postal_code' => 'NA',
-                    'extra_description' => NULL,
-                    'shipping_method' => 'UNK',
-                    'order_id' => 68010,
-                    'order' => 68010,
-                  ),
-                  'currency' => 'EGP',
-                  'is_payment_locked' => false,
-                  'merchant_order_id' => '55981',
-                  'wallet_notification' => NULL,
-                  'paid_amount_cents' => 33300,
-                  'notify_user_with_email' => true,
-                  'items' =>
-                  array (
-                  ),
-                  'order_url' => 'https://accept.paymobsolutions.com/invoice?token=ZXlKMGVYQWlPaUpLVjFRaUxDSmhiR2NpT2lKSVV6VXhNaUo5LmV5SnZjbVJsY2w5d2F5STZOamd3TVRBc0ltTnNZWE56SWpvaVQzSmtaWElpZlEubEU5eWsxWGkzaFRwNU5GTk1mNlMwRzV1M3RtczRyQmszREdmZEdpVWs5ZVY0VFdMTzVoV0ZrMV85eGhxY0VTYXpabElaWWx6TDQ0SWJlRE4zY0VlcVE=',
-                  'commission_fees' => 0,
-                  'delivery_fees' => 0,
+                    'currency' => 'EGP',
+                    'is_payment_locked' => false,
+                    'merchant_order_id' => '55981',
+                    'wallet_notification' => NULL,
+                    'paid_amount_cents' => 33300,
+                    'notify_user_with_email' => true,
+                    'items' =>
+                    array(),
+                    'order_url' => 'https://accept.paymobsolutions.com/invoice?token=ZXlKMGVYQWlPaUpLVjFRaUxDSmhiR2NpT2lKSVV6VXhNaUo5LmV5SnZjbVJsY2w5d2F5STZOamd3TVRBc0ltTnNZWE56SWpvaVQzSmtaWElpZlEubEU5eWsxWGkzaFRwNU5GTk1mNlMwRzV1M3RtczRyQmszREdmZEdpVWs5ZVY0VFdMTzVoV0ZrMV85eGhxY0VTYXpabElaWWx6TDQ0SWJlRE4zY0VlcVE=',
+                    'commission_fees' => 0,
+                    'delivery_fees' => 0,
                 ),
                 'created_at' => '2017-10-09T13:14:01.027560',
                 'transaction_processed_callback_responses' =>
-                array (
-                ),
+                array(),
                 'currency' => 'EGP',
                 'source_data' =>
-                array (
-                  'type' => 'card',
-                  'pan' => '8769',
-                  'sub_type' => 'Visa',
+                array(
+                    'type' => 'card',
+                    'pan' => '8769',
+                    'sub_type' => 'Visa',
                 ),
                 'is_void' => false,
                 'is_refund' => false,
                 'data' =>
-                array (
-                  'currency' => 'EGP',
-                  'secure_hash' => '842374DE4624422275F8071791C89A6A3705CDC71BB4B2BA6764DF67FE2ED7DB',
-                  'authorize_id' => '418254',
-                  'acq_response_code' => '00',
-                  'command' => 'pay',
-                  'klass' => 'VPCPayment',
-                  'avs_result_code' => 'Unsupported',
-                  'receipt_no' => '728222418254',
-                  'avs_acq_response_code' => 'Unsupported',
-                  'merchant_txn_ref' => '329_76180a58961553a4bb742ff7c6e87a7a',
-                  'gateway_integration_pk' => 329,
-                  'message' => 'Approved',
-                  'txn_response_code' => '0',
-                  'card_type' => 'VC',
-                  'merchant' => 'TEST290510EGP',
-                  'order_info' => 'csmohamed8@gmail.com',
-                  'created_at' => '2017-10-09T11:14:03.369050',
-                  'batch_no' => '20171009',
-                  'card_num' => 'xxxxxxxxxxxx8769',
-                  'transaction_no' => '2000009194',
-                  'amount' => '33300',
+                array(
+                    'currency' => 'EGP',
+                    'secure_hash' => '842374DE4624422275F8071791C89A6A3705CDC71BB4B2BA6764DF67FE2ED7DB',
+                    'authorize_id' => '418254',
+                    'acq_response_code' => '00',
+                    'command' => 'pay',
+                    'klass' => 'VPCPayment',
+                    'avs_result_code' => 'Unsupported',
+                    'receipt_no' => '728222418254',
+                    'avs_acq_response_code' => 'Unsupported',
+                    'merchant_txn_ref' => '329_76180a58961553a4bb742ff7c6e87a7a',
+                    'gateway_integration_pk' => 329,
+                    'message' => 'Approved',
+                    'txn_response_code' => '0',
+                    'card_type' => 'VC',
+                    'merchant' => 'TEST290510EGP',
+                    'order_info' => 'csmohamed8@gmail.com',
+                    'created_at' => '2017-10-09T11:14:03.369050',
+                    'batch_no' => '20171009',
+                    'card_num' => 'xxxxxxxxxxxx8769',
+                    'transaction_no' => '2000009194',
+                    'amount' => '33300',
                 ),
                 'is_hidden' => false,
                 'payment_key_claims' =>
-                array (
-                  'amount_cents' => 33300,
-                  'exp' => 1507583631,
-                  'order_id' => 68010,
-                  'card_integration_id' => 329,
-                  'billing_data' =>
-                  array (
-                    'first_name' => 'Mohamed',
-                    'country' => 'EG',
-                    'city' => 'El Gouna',
-                    'floor' => 'null',
-                    'email' => 'csmohamed8@gmail.com',
-                    'street' => 'null',
-                    'last_name' => 'Abdul-Fattah',
-                    'building' => 'null',
-                    'postal_code' => 'NA',
-                    'state' => 'NA',
-                    'apartment' => 'null',
-                    'phone_number' => '0123456789',
-                  ),
-                  'currency' => 'EGP',
-                  'user_id' => 197,
+                array(
+                    'amount_cents' => 33300,
+                    'exp' => 1507583631,
+                    'order_id' => 68010,
+                    'card_integration_id' => 329,
+                    'billing_data' =>
+                    array(
+                        'first_name' => 'Mohamed',
+                        'country' => 'EG',
+                        'city' => 'El Gouna',
+                        'floor' => 'null',
+                        'email' => 'csmohamed8@gmail.com',
+                        'street' => 'null',
+                        'last_name' => 'Abdul-Fattah',
+                        'building' => 'null',
+                        'postal_code' => 'NA',
+                        'state' => 'NA',
+                        'apartment' => 'null',
+                        'phone_number' => '0123456789',
+                    ),
+                    'currency' => 'EGP',
+                    'user_id' => 197,
                 ),
                 'error_occured' => false,
                 'is_live' => false,
@@ -558,9 +559,9 @@ class PayMob
                 'captured_amount' => 0,
                 'owner' => 197,
                 'parent_transaction' => NULL,
-              ),
-              'type' => 'TRANSACTION',
-              'hmac' => '45ba18dfe268d9504a3237aba78c0fbf10a953f9c7059a83527ce0fc3fc605c831eaf3698dd34f6550f66db8cb9806f492e273c7fa65018718e0bb100024d888',
+            ),
+            'type' => 'TRANSACTION',
+            'hmac' => '45ba18dfe268d9504a3237aba78c0fbf10a953f9c7059a83527ce0fc3fc605c831eaf3698dd34f6550f66db8cb9806f492e273c7fa65018718e0bb100024d888',
         ];
 
         // Approved transaction response callback.
@@ -575,7 +576,7 @@ class PayMob
             "profile_id" => "180",
             "source_data_sub_type" => "Visa",
             "refunded_amount_cents" => "0",
-            "id" => "29187","is_void"=>"false",
+            "id" => "29187", "is_void" => "false",
             "is_voided" => "false",
             "captured_amount" => "0",
             "owner" => "197",
@@ -650,7 +651,7 @@ class PayMob
                     "company_emails" => [
                         "elbakly@gmail.com"
                     ],
-                    "company_name" => "aliRocK",
+                    "company_name" => "BaklySystems",
                     "state" => "",
                     "country" => "",
                     "city" => "",
