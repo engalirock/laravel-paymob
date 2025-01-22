@@ -266,7 +266,7 @@ class PayMob
 
         // Send curl
         $payment = $this->cURL(
-            'https://accept.paymobsolutions.com/api/acceptance/payments/pay',
+            'https://accept.paymob.com/api/acceptance/payments/pay',
             $json
         );
 
@@ -291,7 +291,7 @@ class PayMob
 
         // Send curl.
         $res = $this->cURL(
-            'https://accept.paymobsolutions.com/api/acceptance/capture?token=' . $token,
+            'https://accept.paymob.com/api/acceptance/capture?token=' . $token,
             $json
         );
 
@@ -308,7 +308,7 @@ class PayMob
     public function getOrders($authToken, $page = 1)
     {
         $orders = $this->GETcURL(
-            "https://accept.paymobsolutions.com/api/ecommerce/orders?page={$page}&token={$authToken}"
+            "https://accept.paymob.com/api/ecommerce/orders?page={$page}&token={$authToken}"
         );
 
         return $orders;
@@ -324,7 +324,7 @@ class PayMob
     public function getOrder($authToken, $orderId)
     {
         $order = $this->GETcURL(
-            "https://accept.paymobsolutions.com/api/ecommerce/orders/{$orderId}?token={$authToken}"
+            "https://accept.paymob.com/api/ecommerce/orders/{$orderId}?token={$authToken}"
         );
 
         return $order;
@@ -340,7 +340,7 @@ class PayMob
     public function getTransactions($authToken, $page = 1)
     {
         $transactions = $this->GETcURL(
-            "https://accept.paymobsolutions.com/api/acceptance/transactions?page={$page}&token={$authToken}"
+            "https://accept.paymob.com/api/acceptance/transactions?page={$page}&token={$authToken}"
         );
 
         return $transactions;
@@ -356,7 +356,7 @@ class PayMob
     public function getTransaction($authToken, $transactionId)
     {
         $transaction = $this->GETcURL(
-            "https://accept.paymobsolutions.com/api/acceptance/transactions/{$transactionId}?token={$authToken}"
+            "https://accept.paymob.com/api/acceptance/transactions/{$transactionId}?token={$authToken}"
         );
 
         return $transaction;
