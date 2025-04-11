@@ -23,16 +23,16 @@
     },
     "autoload": {
         "psr-4": {
-            "aliRocK\\PayMob\\": "src/"
+            "engalirock\\PayMob\\": "src/"
         }
     },
     "extra": {
         "laravel": {
             "providers": [
-                "aliRocK\\PayMob\\PayMobServiceProvider"
+                "engalirock\\PayMob\\PayMobServiceProvider"
             ],
             "aliases": {
-                "PayMob": "aliRocK\\PayMob\\Facades\\PayMob"
+                "PayMob": "engalirock\\PayMob\\Facades\\PayMob"
             }
         }
     }

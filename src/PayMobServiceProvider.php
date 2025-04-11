@@ -1,6 +1,6 @@
 <?php
 
-namespace aliRocK\PayMob;
+namespace engalirock\PayMob;
 
 use Illuminate\Support\ServiceProvider;
 

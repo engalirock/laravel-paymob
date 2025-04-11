@@ -1,6 +1,6 @@
 <?php
 
-namespace aliRocK\PayMob\Facades;
+namespace engalirock\PayMob\Facades;
 
 use Illuminate\Support\Facades\Facade;
 

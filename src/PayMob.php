@@ -7,7 +7,7 @@
  * @license MIT
  */
 
-namespace aliRocK\PayMob;
+namespace engalirock\PayMob;
 
 
 class PayMob

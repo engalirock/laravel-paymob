@@ -32,13 +32,13 @@ In `config/app.php` file
 ```php
 'providers' => [
     ...
-    aliRocK\PayMob\PayMobServiceProvider::class,
+    engalirock\PayMob\PayMobServiceProvider::class,
     ...
 ];
 
 'aliases' => [
     ...
-    'PayMob' => aliRocK\PayMob\Facades\PayMob::class,
+    'PayMob' => engalirock\PayMob\Facades\PayMob::class,
     ...
 ];
 ```
