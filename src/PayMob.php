@@ -12,6 +12,10 @@ namespace engalirock\PayMob;
 
 class PayMob
 {
+    public $last_http_code;
+    public $last_curl_error;
+    public $last_response_headers = [];
+
     public function __construct()
     {
         //
@@ -32,14 +36,33 @@ class PayMob
         // Request headers
         $headers = array_merge(['Content-Type: application/json'], $headers);
 
+        // --- Fix SSL Handshake Issues (Forcing IPv4) ---
+        curl_setopt($ch, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
+        // -----------------------------------------------
+
         // Return the transfer as a string
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($ch, CURLOPT_POST, 1);
         curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($json));
         curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
 
+        // Capture response headers
+        $this->last_response_headers = [];
+        curl_setopt($ch, CURLOPT_HEADERFUNCTION, function($curl, $header) {
+            $len = strlen($header);
+            $parts = explode(':', $header, 2);
+            if (count($parts) >= 2) {
+                $name = strtolower(trim($parts[0]));
+                $this->last_response_headers[$name] = trim($parts[1]);
+            }
+            return $len;
+        });
+
         // $output contains the output string
         $output = curl_exec($ch);
+        
+        $this->last_http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $this->last_curl_error = curl_error($ch);
 
         // Close curl resource to free up system resources
         curl_close($ch);
@@ -64,9 +87,25 @@ class PayMob
         // Return the transfer as a string
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        curl_setopt($ch, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
+
+        // Capture response headers
+        $this->last_response_headers = [];
+        curl_setopt($ch, CURLOPT_HEADERFUNCTION, function($curl, $header) {
+            $len = strlen($header);
+            $parts = explode(':', $header, 2);
+            if (count($parts) >= 2) {
+                $name = strtolower(trim($parts[0]));
+                $this->last_response_headers[$name] = trim($parts[1]);
+            }
+            return $len;
+        });
 
         // $output contains the output string
         $output = curl_exec($ch);
+
+        $this->last_http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $this->last_curl_error = curl_error($ch);
 
         // Close curl resource to free up system resources
         curl_close($ch);
