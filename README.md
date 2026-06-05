@@ -1,33 +1,53 @@
 # Laravel PayMob
 
-A Laravel online payment gateway.
+[![Latest Stable Version](https://img.shields.io/packagist/v/engalirock/laravel-paymob.svg?style=flat-square)](https://packagist.org/packages/engalirock/laravel-paymob)
+[![Total Downloads](https://img.shields.io/packagist/dt/engalirock/laravel-paymob.svg?style=flat-square)](https://packagist.org/packages/engalirock/laravel-paymob)
+[![License](https://img.shields.io/packagist/l/engalirock/laravel-paymob.svg?style=flat-square)](https://packagist.org/packages/engalirock/laravel-paymob)
+
+A modern, lightweight Laravel package for integrating **PayMob (Accept) Payment Gateway** in Egypt and other supported regions. Fully compatible with Laravel 10+ and PHP 8.2+.
+
+---
+
+## Key Features
+
+- **Laravel Auto-Discovery** supported out of the box.
+- Supports both **Legacy API** (Order & Payment Keys) and the new **Intentions API** (for unified checkout, wallets, cards, etc.).
+- Integrated transaction inquiry and void/refund operations.
+- Clean error debugging with HTTP status codes and curl error logs.
+- Pre-built `PayMobController` template for callbacks.
+
+---
 
 ## Table of Contents
 
-1. [Installation](#installation)
-2. [Steps to make a transaction on PayMob servers](#steps-to-make-a-transaction-on-paymob-servers)
-    1. [API Authentication Request (server side)](#1-api-authentication-request-server-side)
-    2. [Order Registration Request (server side)](#2-order-registration-request-server-side)
-    3. [Payment Key Generation Request (server side)](#3-payment-key-generation-request-server-side)
-    4. [Prepare Client Code to Perform Payment Request (Webclients and mobile apps) (client side)](#4-prepare-client-code-to-perform-payment-request-webclients-and-mobile-apps-client-side)
-        1. [Iframe for websites/webapps](#iframe-for-websiteswebapps)
-        2. [Mobile clients](#mobile-clients)
+1. [SEO & Description](#laravel-paymob)
+2. [Installation](#installation)
+3. [Configuration](#configuration)
+4. [Modern Integration (Intentions API - Recommended)](#modern-integration-intentions-api-recommended)
+5. [Legacy Integration (Steps to make a transaction)](#legacy-integration-steps-to-make-a-transaction-on-paymob-servers)
+6. [Debugging & Error Handling](#debugging--error-handling)
+7. [PayMobController & Callbacks](#paymobcontroller)
+8. [Other Methods](#other-paymob-methods)
+9. [License](#license)
 
-3. [PayMobController](#paymobcontroller)
-4. [PayMob Postman Collection](#paymob-postman-collection)
-5. [Other PayMob Methods](#other-paymob-methods)
-6. [TODO](#todo)
-7. [License](#license)
+---
 
 ## Installation
 
-Require via composer
+You can install the package via Composer:
 
 ```bash
-$ composer require engalirock/laravel-paymob
+composer require engalirock/laravel-paymob
 ```
 
-In `config/app.php` file
+> [!NOTE]
+> **Laravel 10+** supports package auto-discovery, so you do not need to add the ServiceProvider or Facade manually to your `config/app.php`.
+
+If you are running an older setup or want to register it manually:
+
+### Manual Registration (Optional)
+
+In `config/app.php`:
 
 ```php
 'providers' => [
@@ -43,222 +63,184 @@ In `config/app.php` file
 ];
 ```
 
-First of all, make an account on [WeAccept portal](https://www.weaccept.co/portal/login), run this command to generate the PayMob configuration file
+---
+
+## Configuration
+
+Publish the config file using:
+
 ```bash
-$ php artisan vendor:publish    
+php artisan vendor:publish --provider="engalirock\PayMob\PayMobServiceProvider"
 ```
-Then fill in the credentials in `config/paymob.php` file. Make sure to make an iframe in your dashboard and get the integration id for payment requests.
 
-Fill in the processed callback and response callback routes in integration details with the routes for `processedCallback` and `invoice` methods in `PayMobController`
+This will create a `config/paymob.php` file. Fill in your credentials:
 
-## Steps to make a transaction on PayMob servers
+```php
+return [
+    'username'       => env('PAYMOB_USERNAME', ''),
+    'password'       => env('PAYMOB_PASSWORD', ''),
+    'api_key'        => env('PAYMOB_API_KEY', ''),
+    'integration_id' => env('PAYMOB_INTEGRATION_ID', ''),
+    'iframe_id'      => env('PAYMOB_IFRAME_ID', ''),
+    
+    // IP resolution setting to bypass SSL Handshake Issues (Default: force IPv4)
+    'ip_resolve'     => defined('CURL_IPRESOLVE_V4') ? CURL_IPRESOLVE_V4 : 1,
+];
+```
 
-1. API Authentication Request
-2. Order Registration Request
-3. Payment Key Generation Request
-4. Prepare Client Code to Perform Payment Request (Webclients and mobile apps)
-5. Merchant Notification Endpoint
-6. Transaction Response Endpoint
+Make sure to set up your **Processed Callback** and **Response Callback** URLs in your PayMob dashboard pointing to your application routes.
 
-You can refer to [PayMob online guide](https://accept.paymobsolutions.com/docs/guide/online-guide/) for more information.
+---
 
-### 1\. API Authentication Request (server side)
+## Modern Integration (Intentions API - Recommended)
 
-In this step you are required to perform a post request to PayMob's authentication API to obtain authentication token
+PayMob's new **Intentions API** simplifies payment flow integration by reducing multiple backend steps into a single intention.
 
-Use PayMob Facade to make requests.
+### 1. Request Auth Token
+```php
+use engalirock\PayMob\Facades\PayMob;
 
+$auth = PayMob::authPaymob();
+$token = $auth->token;
+```
+
+### 2. Create Payment Intention
+Use the `intention` method to build the payment request payload:
+```php
+$data = [
+    'amount'          => 15000, // Amount in cents/piasters (e.g. 150.00 EGP)
+    'currency'        => 'EGP',
+    'payment_methods' => [12345, 67890], // Array of integration IDs (Card, Wallet, etc.)
+    'billing' => [
+        'email'        => 'user@example.com',
+        'first_name'   => 'John',
+        'last_name'    => 'Doe',
+        'phone_number' => '+201000000000',
+        'city'         => 'Cairo',
+        'country'      => 'EG',
+    ],
+    'customer' => [
+        'first_name' => 'John',
+        'last_name'  => 'Doe',
+        'email'      => 'user@example.com',
+    ]
+];
+
+$intention = PayMob::intention($token, $data);
+```
+
+### 3. Unified Checkout URL
+Generate the client checkout URL to redirect the user to the unified checkout page:
+```php
+$checkoutUrl = PayMob::unifiedcheckout($publicKey, $intention->client_secret);
+return redirect()->away($checkoutUrl);
+```
+
+---
+
+## Legacy Integration (Steps to make a transaction on PayMob servers)
+
+### 1. API Authentication Request
 ```php
 $auth = PayMob::authPaymob();
-// Run this method to get a sample response of auth request.
-PayMob::sample('authPaymob');
 ```
 
-This method gets the credentials from `config/paymob.php` file, so fill in `username` and `password` first to make this auth request.
-
-### 2\. Order Registration Request (server side)
-
-At this step you will register an order on Paymob Accept so that you can pay for it later using a transaction.
-
+### 2. Order Registration Request
 ```php
 $paymobOrder = PayMob::makeOrderPaymob(
-    $auth->token, // this is token from step 1.
-    $auth->profile->id, // this is the merchant id from step 1.
-    $order->totalCost * 100, // total amount by cents/piasters.
-    $order->id // your (merchant) order id.
+    $auth->token,
+    $auth->profile->id,
+    $order->totalCost * 100, // Total amount in cents
+    $order->id // Your order ID
 );
-// Run this method to get a sample response of make order request.
-PayMob::sample('makeOrderPaymob');
 ```
 
-Store the returned paymob order id in your DB to make transactions with using this id in future.
-
-### 3\. Payment Key Generation Request (server side)
-
-At this step you will obtain a `payment_key` token. This key will be used to authenticate your payment request.
-
+### 3. Payment Key Generation Request
 ```php
 $paymentKey = PayMob::getPaymentKeyPaymob(
-    $auth->token, // from step 1.
-    $order->totalCost * 100, // total amount by cents/piasters.
-    $order->paymob_order_id, // paymob order id from step 2.
-    // For billing data
-    $user->email, // optional
-    $user->firstname, // optional
-    $user->lastname, // optional
-    $user->phone, // optional
-    $city->name, // optional
-    $country->name // optional
-);
-// Run this method to get a sample response of payment key request.
-PayMob::sample('getPaymentKeyPaymob');
-```
-
-### 4\. Prepare Client Code to Perform Payment Request (Webclients and mobile apps) (client side)
-
-Now that you have obtained payment key, you need to prepare your checkout experience (i.e. client-side code).
-
-#### Iframe for websites/webapps
-
-PayMob recommended iframe
-
-```html
-<form id="paymob_checkout">
-    <label for="">Card number</label>
-      <input type="text" value="4987654321098769" paymob_field="card_number">
-      <br>
-      <label for="">Card holdername</label>
-      <input type="text" value="Test Account" paymob_field="card_holdername">
-      <br>
-      <label for="">Card month</label>
-      <input type="text" value="05" paymob_field="card_expiry_mm">
-      <br>
-      <label for="">Card year</label>
-      <input type="text" value="21" paymob_field="card_expiry_yy">
-      <br>
-      <label for="">Card cvn</label>
-      <input type="text" value="123" paymob_field="card_cvn">
-      <input type="hidden" value="CARD" paymob_field="subtype">
-      <input type="checkbox" value="tokenize" name="save card"> <label for="save card">save card</label>
-
-      <input type="submit" value="Pay">
-      <br>
-</form>
-```
-
-```html
-<iframe src="https://accept.paymobsolutions.com/api/acceptance/iframes/{{config('paymob.iframe_id')}}?payment_token={{$paymentKey->token}}"></iframe>
-```
-
-#### Mobile clients
-
-In case of mobile apps, you will need to import Accept native IOS or Android SDK to proceed with the payment and/or save the card details.
-
-Please request the needed SDK by emailing support@weaccept.co
-For more information visit [PayMob mobile guid](https://accept.paymobsolutions.com/docs/guide/online-guide/#step-4-prepare-your-client-code-client-side)
-
-```php
-$payment = PayMob::makePayment(
-    $paymentKey->token, // payment key token from step 3.
-    $request->card_number,
-    $request->card_holdername,
-    $request->card_expiry_mm,
-    $request->card_expiry_yy,
-    $request->card_cvn,
-    $order->paymob_order_id, // PayMob order id from step 2.
+    $integrationId, // Card integration ID
+    $auth->token,
+    $order->totalCost * 100,
+    $paymobOrder->id,
+    $user->email,
     $user->firstname,
     $user->lastname,
-    $user->email,
-    $user->phone
+    $user->phone,
+    $city->name,
+    $country->name
 );
-// Run this method to get a sample response of make payment for API request.
-// processedCallback is for the post response to your processed callback route from PayMob.
-PayMob::sample('processedCallback');
-// responseCallback is for the Get response to your response callback route from PayMob.
-PayMob::sample('responseCallback');
 ```
 
-You can use some [test cards](https://accept.paymobsolutions.com/docs/guide/online-guide/#test-cards) to make a test payment.
+### 4. Load Iframe
+Use the token from the payment key payload inside the iframe:
+```html
+<iframe src="https://accept.paymob.com/api/acceptance/iframes/{{ config('paymob.iframe_id') }}?payment_token={{ $paymentKey->token }}"></iframe>
+```
 
-You can run `PayMob::sample()` to see available samples.
+---
+
+## Debugging & Error Handling
+
+If a request fails, you can inspect the response status code, curl errors, and response headers:
+
+```php
+use engalirock\PayMob\Facades\PayMob;
+
+$response = PayMob::authPaymob();
+
+if (!$response || isset($response->detail)) {
+    Log::error('PayMob Auth Failed', [
+        'http_code'  => PayMob::last_http_code,
+        'curl_error' => PayMob::last_curl_error,
+        'headers'    => PayMob::last_response_headers,
+    ]);
+}
+```
+
+---
 
 ## PayMobController
 
-We have 4 methods in `PayMobController`.
+A pre-built controller template `PayMobController.php` is published inside your app directory to handle response callbacks.
+Update the `processedCallback` and `invoice` routes on your PayMob dashboard integration page.
 
-First use `checkingOut` method to display the payment form page with the iframe. Or simply make payment using `payAPI` method for mobile clients.
-
-Then, we have the `processedCallback` method to catch the `POST` callback response from PayMob servers, and `invoice` method to catch the `GET` callback response and display your invoice page.
-
-Replace all `#code ...` with your logic.
-
-Don't forget to make routes for these methods, and to save the `processedCallback` and `invoice` routes in the integration details in PayMob dashboard.
-
-## PayMob Postman Collection
-
-There is a [Postman collection](PayMob.postman_collection.json) for PayMob requests.
+---
 
 ## Other PayMob Methods
 
-There are some `GET` methods to get your data from PayMob.
-
-### 1\. Get All Orders
-
+### 1. Transaction Inquiry
+Verify payment details using a PayMob order ID:
 ```php
-PayMob::getOrders(
-    $auth->token, // token from step 1.
-    $page // optional for pagination, by default set to 1
-);
+$inquiry = PayMob::transaction_inquiry($token, $orderId);
 ```
 
-### 2\. Get a Specific Order
-
+### 2. Get All Orders
 ```php
-PayMob::getOrder(
-    $auth->token, // token from step 1.
-    $order->paymob_order_id // PayMob order id from step 2.
-);
+$orders = PayMob::getOrders($token, $page = 1);
 ```
 
-### 3\. Get All Transactions
-
+### 3. Get Specific Order
 ```php
-PayMob::getTransactions(
-    $auth->token, // token from step 1.
-    $page // optional for pagination, by default set to 1
-);
+$order = PayMob::getOrder($token, $orderId);
 ```
 
-### 4\. Get a Specific Transaction
-
+### 4. Get All Transactions
 ```php
-PayMob::getTransaction(
-    $auth->token, // token from step 1.
-    $transactionId // PayMob transaction id from step 4.
-);
+$transactions = PayMob::getTransactions($token, $page = 1);
 ```
 
-### 5. Capture For Auth Transactions
-
-If your transactions is `auth` type (not `standalone`), then you have to capture your payment through `capture` method.
-
+### 5. Get Specific Transaction
 ```php
-PayMob::capture(
-    $auth->token, // token from step 1.
-    $transactionId, // the returned id from step 4.
-    $totalCost * 100 // total price/cost in cents/piasters.
-);
+$transaction = PayMob::getTransaction($token, $transactionId);
 ```
 
-## TODO
+### 6. Capture Authorized Transaction
+```php
+$capture = PayMob::capture($token, $transactionId, $amountCents);
+```
 
-1. Invoice page.
-2. Sample transaction cycle.
-3. Get all orders/transactions page.
-4. Refund from backend.
-5. Iframe with JS validations.
-6. Top level redirect request for 3D secure.
+---
 
 ## License
 
-Laravel PayMob is a free software distributed under the terms of the MIT license.
+Laravel PayMob is open-sourced software licensed under the [MIT license](LICENSE).
