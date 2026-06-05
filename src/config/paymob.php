@@ -39,4 +39,19 @@ return [
 
     'integration_id' => '',
     'iframe_id' => '',
+
+    /*
+    |--------------------------------------------------------------------------
+    | cURL IP Resolution
+    |--------------------------------------------------------------------------
+    |
+    | Force resolving IP addresses to IPv4 or IPv6 to avoid SSL handshake
+    | issues depending on your hosting environment.
+    | Options: CURL_IPRESOLVE_V4, CURL_IPRESOLVE_V6, or CURL_IPRESOLVE_WHATEVER
+    | Default: CURL_IPRESOLVE_V4 (Forced IPv4)
+    |
+    */
+
+    'ip_resolve' => defined('CURL_IPRESOLVE_V4') ? CURL_IPRESOLVE_V4 : 1,
 ];
+

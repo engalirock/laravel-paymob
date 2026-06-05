@@ -22,13 +22,15 @@ class PayMob
     }
 
     /**
-     * Send POST cURL request to paymob servers.
+     * Execute HTTP cURL request to paymob servers.
      *
+     * @param  string  $method
      * @param  string  $url
      * @param  array  $json
-     * @return array
+     * @param  array  $headers
+     * @return mixed
      */
-    protected function cURL($url, $json, $headers=[])
+    protected function executeRequest($method, $url, $json = [], $headers = [])
     {
         // Create curl resource
         $ch = curl_init($url);
@@ -36,14 +38,23 @@ class PayMob
         // Request headers
         $headers = array_merge(['Content-Type: application/json'], $headers);
 
-        // --- Fix SSL Handshake Issues (Forcing IPv4) ---
-        curl_setopt($ch, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
-        // -----------------------------------------------
+        // Resolve IP setting from config (safely default to forcing IPv4 if not configured)
+        $ipResolve = config('paymob.ip_resolve');
+        if ($ipResolve === null && defined('CURL_IPRESOLVE_V4')) {
+            $ipResolve = CURL_IPRESOLVE_V4;
+        }
+        if ($ipResolve !== null) {
+            curl_setopt($ch, CURLOPT_IPRESOLVE, $ipResolve);
+        }
 
         // Return the transfer as a string
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($ch, CURLOPT_POST, 1);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($json));
+
+        if (strcasecmp($method, 'POST') === 0) {
+            curl_setopt($ch, CURLOPT_POST, 1);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($json));
+        }
+
         curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
 
         // Capture response headers
@@ -58,58 +69,40 @@ class PayMob
             return $len;
         });
 
-        // $output contains the output string
+        // Execute curl
         $output = curl_exec($ch);
-        
+
         $this->last_http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         $this->last_curl_error = curl_error($ch);
 
         // Close curl resource to free up system resources
         curl_close($ch);
+
         return json_decode($output);
+    }
+
+    /**
+     * Send POST cURL request to paymob servers.
+     *
+     * @param  string  $url
+     * @param  array  $json
+     * @param  array  $headers
+     * @return mixed
+     */
+    protected function cURL($url, $json, $headers=[])
+    {
+        return $this->executeRequest('POST', $url, $json, $headers);
     }
 
     /**
      * Send GET cURL request to paymob servers.
      *
      * @param  string  $url
-     * @return array
+     * @return mixed
      */
     protected function GETcURL($url)
     {
-        // Create curl resource
-        $ch = curl_init($url);
-
-        // Request headers
-        $headers = array();
-        $headers[] = 'Content-Type: application/json';
-
-        // Return the transfer as a string
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-        curl_setopt($ch, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
-
-        // Capture response headers
-        $this->last_response_headers = [];
-        curl_setopt($ch, CURLOPT_HEADERFUNCTION, function($curl, $header) {
-            $len = strlen($header);
-            $parts = explode(':', $header, 2);
-            if (count($parts) >= 2) {
-                $name = strtolower(trim($parts[0]));
-                $this->last_response_headers[$name] = trim($parts[1]);
-            }
-            return $len;
-        });
-
-        // $output contains the output string
-        $output = curl_exec($ch);
-
-        $this->last_http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        $this->last_curl_error = curl_error($ch);
-
-        // Close curl resource to free up system resources
-        curl_close($ch);
-        return json_decode($output);
+        return $this->executeRequest('GET', $url);
     }
 
     /**
